@@ -1,22 +1,22 @@
   
-from flask import Flask, render_template, url_for
+from flask import Flask, render_template, url_for, flash, redirect
 from forms import RegistrationForm, LoginForm
-app = Flask(__name__)
 
-app.config['SECRET_KEY'] = '5afd723422802a8cedff0e0ff00d8976'
+app = Flask(__name__)
+app.config['SECRET_KEY'] = '5791628bb0b13ce0c676dfde280ba245'
 
 posts = [
     {
-        'author': 'Adam Pekalski',
+        'author': 'Corey Schafer',
         'title': 'Blog Post 1',
         'content': 'First post content',
-        'date_posted': 'October 14, 2020'
+        'date_posted': 'April 20, 2018'
     },
     {
         'author': 'Jane Doe',
         'title': 'Blog Post 2',
         'content': 'Second post content',
-        'date_posted': 'October 15, 2020'
+        'date_posted': 'April 21, 2018'
     }
 ]
 
@@ -31,15 +31,27 @@ def home():
 def about():
     return render_template('about.html', title='About')
 
-@app.route("/login")
-def login():
-    form = LoginForm
-    return render_template('login.html', title='login', form=form)
 
-@app.route("/register")
+@app.route("/register", methods=['GET', 'POST'])
 def register():
-    form = RegistrationForm
-    return render_template('register.html', title='register', form=form)
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        flash(f'Account created for {form.username.data}!', 'success')
+        return redirect(url_for('home'))
+    return render_template('register.html', title='Register', form=form)
+
+
+@app.route("/login", methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        if form.email.data == 'admin@blog.com' and form.password.data == 'password':
+            flash('You have been logged in!', 'success')
+            return redirect(url_for('home'))
+        else:
+            flash('Login Unsuccessful. Please check username and password', 'danger')
+    return render_template('login.html', title='Login', form=form)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
